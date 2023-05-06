@@ -24,11 +24,6 @@ const PostSchema = new Schema({
     type: Boolean,
     default: false
   },
-  user: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true
-  },
 }, { timestamps: true });
 
 module.exports = Mongoose.model("Post", PostSchema);

@@ -1,35 +1,72 @@
 const Mongoose = require("mongoose");
 const Schema = Mongoose.Schema;
+const debug = require("debug")("app:user-model");
 
-const PostSchema = new Schema({
-  title: {
+const crypto = require("crypto");
+
+//email, user, password, roles, Saved Posts
+const userSchema = new Schema({
+  email: {
     type: String,
-    trim: true,
-    required: true
-  },
-  description: {
-    type: String,
-    trim: true,
     required: true,
+    trim: true,
+    unique: true
   },
-  image: {
-    //URL's
+  username: {
     type: String,
+    required: true,
+    trim: true,
+    unique: true
   },
-  hidden: {
-    type: Boolean,
-    default: false
-  },
-  user: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
+  hashedPassword: {
+    type: String,
     required: true
   },
-  likes: {
-    type: [Schema.Types.ObjectId],
-    ref: "User",
-    default: [],
+  salt: {
+    type: String
+  },
+  tokens: {
+    type: [String],
+    default: []
+  },
+  roles: {
+    type: [String],
+    default: []
   }
 }, { timestamps: true });
 
-module.exports = Mongoose.model("Post", PostSchema);
+userSchema.methods = {
+  encryptPassword: function (password) {
+    if (!password) return "";
+
+    try {
+      const encryptedPassword = crypto.pbkdf2Sync(
+        password,
+        this.salt,
+        1000, 64,
+        `sha512`
+      ).toString("hex");
+
+      return encryptedPassword;
+    } catch (error) {
+      debug({ error });
+      return "";
+    }
+  },
+  makeSalt: function () {
+    return crypto.randomBytes(16).toString("hex");
+  },
+  comparePassword: function (password) {
+    return this.hashedPassword === this.encryptPassword(password);
+  }
+}
+
+userSchema.virtual("password")
+  .set(function (password = crypto.randomBytes(16).toString()) {
+    if (!password) return;
+
+    this.salt = this.makeSalt();
+    this.hashedPassword = this.encryptPassword(password);
+  })
+
+module.exports = Mongoose.model("User", userSchema);

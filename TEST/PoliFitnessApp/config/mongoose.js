@@ -14,7 +14,6 @@ const connect = async () => {
     debug("Conexión a la base exitosa");
   } catch (error) {
     debug("Error en la conexión de la base");
-    process.exit(1);
   }
 }
 

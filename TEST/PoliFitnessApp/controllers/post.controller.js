@@ -1,22 +1,19 @@
 const Post = require("../models/Post.model");
-const User = require("../models/User.model");
 const debug = require("debug")("app:post-controller");
 
 const controller = {};
 
 // CREATE POST 
 
-controller.create = async (req, res) => {
+controller.createPost = async (req, res) => {
   try {
     const { title, description, image, category } = req.body;
-    const { _id: userId } = req.user;
-
+    
     const post = new Post({
       title: title,
       description: description,
       image: image,
-      category : category,
-      user: userId
+      category : category
     });
 
     const newPost = await post.save();
@@ -34,7 +31,7 @@ controller.create = async (req, res) => {
 
 // FIND ALL POST's
 
-controller.findAll = async (req, res) => {
+controller.findAllPosts = async (req, res) => {
   try {
     const posts =
       await Post
@@ -46,7 +43,6 @@ controller.findAll = async (req, res) => {
     return res.status(500).json({ error: "Error interno de servidor" });
   }
 }
-
 
 // FIND POST BY CATEGORY
 
@@ -92,7 +88,7 @@ controller.togglePostVisibility = async (req, res) => {
 
     //Paso 01: Obtenemos el post
     //Paso 02: Verificamos la pertenencia del post al usuario
-    const post = await Post.findOne({ _id: postId, user: userId });
+    const post = await Post.findOne({ _id: postId});
 
     if (!post) {
       return res.status(404).json({ error: "Post no encontrado" });
@@ -104,7 +100,7 @@ controller.togglePostVisibility = async (req, res) => {
     //Paso 04: Guardo los cambios
     await post.save();
 
-    return res.status(200).json({ message: "Post actualizado" })
+    return res.status(200).json({ message: "Noticia actualizada" })
   } catch (error) {
     debug({ error });
     return res.status(500).json({ error: "Error interno de servidor" });
@@ -121,10 +117,10 @@ controller.deletePostById = async (req, res) => {
         .deleteOne({ _id: identifier, hidden: false })
   
       if (!post) {
-        return res.status(404).json({ error: "Post no encontrado" });
+        return res.status(404).json({ error: "Noticia no encontrada" });
       }
   
-      return res.status(200).json({ Done: "Post eleminado correctamente!" });
+      return res.status(200).json({ Done: "Noticia eleminada correctamente!" });
     } catch (error) {
       debug({ error });
       return res.status(500).json({ error: "Error interno de servidor" });

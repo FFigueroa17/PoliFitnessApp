@@ -7,28 +7,46 @@ const debug = require("debug")("app:rutine-controller");
 
 const controller = {};
 
-// CREATE RUTINES - TO DO "AUN FALTA"
+// CREATE RUTINES 
 
-controller.create = async (req, res) => {
+controller.createRutine = async (req, res) => {
+
     try {
-        const { title, description, image, category } = req.body;
-        const { _id: userId } = req.user;
+        const { 
+            title,
+            description,
+            image,
+            ageRange,
+            routineType,
+            bmiRange,
+            waistToHipRatioRange,
+            difficulty,
+            calories,
+            routineTime,
+            steps
+        } = req.body;
 
-        const post = new Post({
+        const rutine = new Rutine({
             title: title,
             description: description,
             image: image,
-            category: category,
-            user: userId
+            ageRange: ageRange,
+            routineType: routineType,
+            bmiRange: bmiRange,
+            waistToHipRatioRange: waistToHipRatioRange,
+            difficulty: difficulty,
+            calories: calories,
+            routineTime: routineTime,
+            steps: steps
         });
 
-        const newPost = await post.save();
+        const newRutine = await rutine.save();
 
-        if (!newPost) {
-            return res.status(409).json({ error: "Ocurrio un error al crear la notica" });
+        if (!newRutine) {
+            return res.status(409).json({ error: "Ocurrio un error al crear la rutina" });
         }
 
-        return res.status(201).json(newPost);
+        return res.status(201).json(newRutine);
     } catch (error) {
         debug({ error });
         return res.status(500).json({ error: "Error interno de servidor" });
@@ -39,11 +57,11 @@ controller.create = async (req, res) => {
 
 controller.findAll = async (req, res) => {
     try {
-        const rutine =
+        const rutines =
             await Rutine
                 .find({ hidden: false })
 
-        return res.status(200).json({ rutine });
+        return res.status(200).json({ rutines });
     } catch (error) {
         debug({ error });
         return res.status(500).json({ error: "Error interno de servidor" });
@@ -66,20 +84,20 @@ controller.findPostsByCategory = async (req, res) => {
     }
 }
 
-// FIND RUTINE BY ID  -  TO  DO "AUN FALTA"
+// FIND RUTINE BY ID  
 
-controller.findOneById = async (req, res) => {
+controller.findRutineOneById = async (req, res) => {
     try {
         const { identifier } = req.params;
 
-        const post = await Post
+        const rutine = await Rutine
             .findOne({ _id: identifier, hidden: false })
 
         if (!post) {
-            return res.status(404).json({ error: "Post no encontrado" });
+            return res.status(404).json({ error: "Rutina no encontrada" });
         }
 
-        return res.status(200).json(post);
+        return res.status(200).json(rutine);
     } catch (error) {
         debug({ error });
         return res.status(500).json({ error: "Error interno de servidor" });
@@ -93,7 +111,7 @@ controller.deleteRutineById = async (req, res) => {
         const { identifier } = req.params;
 
         const rutine = await Rutine
-            .deleteOne({ _id: identifier})
+            .deleteOne({ _id: identifier })
 
         if (!rutine) {
             return res.status(404).json({ error: "Rutina no encontrada" });
@@ -108,22 +126,43 @@ controller.deleteRutineById = async (req, res) => {
 
 // GET RUTINE BY TAGS
 
-
-controller.getRutineByTags = async (req, res) => {
+controller.getRoutineByTags = async (req, res) => {
     try {
-        // Obtener las etiquetas desde los parámetros de la solicitud
-        const { tags } = req.params;
-
-        // Buscar las rutinas que contengan las etiquetas proporcionadas
-        const routines = await Routine
-            .find({ tags: { $in: tags } });
-
-        // Responder con las rutinas encontradas
-        res.status(200).json(routines);
+      // Obtener los parámetros de búsqueda desde la consulta de la URL
+      const {
+        ageMin,
+        ageMax,
+        routineType,
+        bmiMin,
+        bmiMax,
+        iccMin,
+        iccMax,
+        difficulty,
+        calories,
+        routineTime,
+      } = req.query;
+  
+      // Construir el filtro de búsqueda
+      const filter = {
+        ageRange: { $gte: ageMin, $lte: ageMax },
+        routineType,
+        bmiRange: { $gte: bmiMin, $lte: bmiMax },
+        waistToHipRatioRange: { $gte: iccMin, $lte: iccMax },
+        difficulty,
+        calories,
+        routineTime,
+      };
+  
+      // Buscar la rutina que cumpla con los criterios especificados
+      const routine = await Routine.findOne(filter);
+  
+      // Responder con la rutina encontrada
+      res.status(200).json(routine);
     } catch (error) {
-        // Manejo de errores
-        res.status(500).json({ error: 'Ha ocurrido un error al obtener las rutinas por etiquetas.' });
+      // Manejo de errores
+      res.status(500).json({ error: 'Ha ocurrido un error al obtener la rutina.' });
     }
-}
+  }
+
 
 module.exports = controller;

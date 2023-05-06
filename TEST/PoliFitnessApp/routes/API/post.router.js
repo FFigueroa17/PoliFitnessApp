@@ -1,63 +1,42 @@
 const express = require("express");
 const router = express.Router();
 
-const ROLES = require("../../data/roles.constants.json");
+//const ROLES = require("../../data/roles.constants.json");
 
-const postController = require("../../controllers/post.controller");
+const postController = require("../../controllers/post.controller")
 
 const postValidators = require("../../validators/post.validators");
 const runValidations = require("../../validators/index.middleware");
 
-const { authentication, authorization } = require('../../middlewares/auth.middewares');
 
-router.get("/", postController.findAll);
-router.get("/own", authentication, postController.findOwn);
-router.get("/saved", authentication, postController.getOwnSavedPosts);
-router.get("/user/:identifier",
-    postValidators.findPostByIdValidator,
-    runValidations,
-    postController.findPostsByUser
-);
-router.get("/:identifier",
-    postValidators.findPostByIdValidator,
-    runValidations,
-    postController.findOneById
-);
+// FIND ALL POST's
 
-//Funcionalidad de usuario
+router.get("/", postController.findAllPosts);
 
-/* NO NECESARIO POR EL MOMENTO
-router.post("/",
-    authentication,
-    authorization(ROLES.USER),
+// CREATE POST
+
+router.post("/createPost",
     postValidators.createPostValidator,
     runValidations,
-    postController.create);
+    postController.createPost);
 
-router.patch("/visibility/:identifier",
-    authentication,
-    authorization(ROLES.USER),
+// FIND POST BY CATEGORY
+
+//router.get("/category/:identifier", postController.findPostsByCategory);
+
+// FIND POST BY ID
+
+/*router.get("/:identifier",
     postValidators.findPostByIdValidator,
     runValidations,
-    postController.togglePostVisibility
-);
+    postController.findPostById);*/
 
-router.patch("/like/:identifier",
-    authentication,
-    authorization(ROLES.USER),
+// DELETE POST BY ID
+
+/*router.delete("/deletePost/:identifier",
     postValidators.findPostByIdValidator,
     runValidations,
-    postController.togglePostLike
-);
+    postController.findPostById);*/
 
-router.patch("/save/:identifier",
-    authentication,
-    authorization(ROLES.USER),
-    postValidators.findPostByIdValidator,
-    runValidations,
-    postController.toggleSavedPost
-);
-
-*/
 
 module.exports = router;
